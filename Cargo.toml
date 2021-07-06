@@ -5,7 +5,7 @@ edition = "2018"
 authors = ["Andreas Hauser <Andreas.Hauser@LMU.de>"]
 description = "Commandline tool for plotting frequency ranked histograms of TSV/CSV data"
 license = "CC-BY-SA-4.0"
-keywords = ["histogram", "plot", "command-line", "command-line-utilities", "visualization"]
+keywords = ["histogram", "plot", "command-line", "CLI", "visualization"]
 repository = "https://github.com/ahcm/fastx"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
