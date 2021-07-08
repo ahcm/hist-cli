@@ -27,6 +27,7 @@ OPTIONS:
 
 ARGS:
     <input>    
+```
 
 Just piping from stdin:
 ```
