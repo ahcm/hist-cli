@@ -7,7 +7,6 @@ use std::io;
 use std::collections::BTreeMap;
 use structopt::StructOpt;
 use std::path::PathBuf;
-use std::path::Path;
 use std::error::Error;
 use std::fs::File;
 
@@ -17,8 +16,20 @@ struct Opt
 {
     #[structopt(parse(from_os_str))]
     input: Option<PathBuf>,
-    #[structopt(parse(from_os_str), default_value = "histogram.png")]
+    #[structopt(parse(from_os_str), long, short, default_value = "histogram.png")]
     output: PathBuf,
+    #[structopt(short, long, default_value = "Counts distribution")]
+    /// optional title above the plot
+    title: String,
+    #[structopt(short, long, default_value = "1280x960")]
+    /// the x and y pixel sizes of the output file
+    size: String,
+    #[structopt(long, default_value = "Rank")]
+    /// x-axis label
+    xdesc: String,
+    #[structopt(long, default_value = "Counts")]
+    /// y-axis label
+    ydesc: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -32,7 +43,7 @@ fn main() -> Result<(), Box<dyn Error>>
     let opt = Opt::from_args();
 
     let input: Box<dyn std::io::Read + 'static> =
-        if let Some(path) = opt.input
+        if let Some(path) = &opt.input
         {
             Box::new(File::open(&path).unwrap())
         }
@@ -55,7 +66,7 @@ fn main() -> Result<(), Box<dyn Error>>
             map
         }); 
 
-    plot_rank(counts, &opt.output)
+    plot_rank(counts, &opt)
 }
 
 
@@ -66,13 +77,16 @@ fn next_potence(x : f64) -> f64
     10f64.powf(((x.log10() * 10f64).ceil()) / 10.0)
 }
 
-fn plot_rank(counts : BTreeMap<String, usize>, out_path : &Path) -> Result<(), Box<dyn Error>>
+fn plot_rank(counts : BTreeMap<String, usize>, opt : &Opt) -> Result<(), Box<dyn Error>>
 {
     let max = counts.values().fold(0, |max,v| max.max(*v));
     let y_dim = next_potence(max as f64) as usize;
     let x_dim = (counts.values().len() as f64 * 1.1) as usize;
 
-    let root = BitMapBackend::new(out_path, (1280, 960)).into_drawing_area();
+    let (size_x_str, size_y_str) = opt.size.split_once("x").expect("size not in correct format");
+    let size_x = size_x_str.parse().expect("Unable to parse size x");
+    let size_y = size_y_str.parse().expect("Unable to parse size y");
+    let root = BitMapBackend::new(&opt.output, (size_x, size_y)).into_drawing_area();
 
     root.fill(&WHITE)?;
 
@@ -80,15 +94,15 @@ fn plot_rank(counts : BTreeMap<String, usize>, out_path : &Path) -> Result<(), B
         .x_label_area_size(70)
         .y_label_area_size(100)
         .margin(20)
-        .caption("Counts distribution", ("sans-serif", 40))
+        .caption(&opt.title, ("sans-serif", 40))
         .build_cartesian_2d((0..x_dim).into_segmented(), 0..y_dim)?;
 
     chart
         .configure_mesh()
         .disable_x_mesh()
         .bold_line_style(&WHITE.mix(0.3))
-        .y_desc("Count")
-        .x_desc("Rank")
+        .y_desc(&opt.ydesc)
+        .x_desc(&opt.xdesc)
         .disable_x_mesh()
         .label_style(("sans-serif", 20))
         .axis_desc_style(("sans-serif", 24))
