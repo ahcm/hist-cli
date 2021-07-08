@@ -9,6 +9,7 @@ use structopt::StructOpt;
 use std::path::PathBuf;
 use std::path::Path;
 use std::error::Error;
+use std::fs::File;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "hist", about = "Plots histogram of input")]
@@ -26,6 +27,38 @@ struct Record
     key: String,
 }
 
+fn main() -> Result<(), Box<dyn Error>>
+{
+    let opt = Opt::from_args();
+
+    let input: Box<dyn std::io::Read + 'static> =
+        if let Some(path) = opt.input
+        {
+            Box::new(File::open(&path).unwrap())
+        }
+        else
+        {
+            Box::new(io::stdin())
+        };
+
+    let counts = 
+        csv::ReaderBuilder::new()
+        .has_headers(false)
+        .delimiter(b'\t')
+        .from_reader(input)
+        .deserialize::<Record>()
+        .fold(BTreeMap::new(), |mut map,rec|
+        { 
+            let s = rec.unwrap().key; 
+            //*map.entry(s).or_insert(0) += 1;
+            map.entry(s).and_modify(|e| *e += 1 ).or_insert(1);
+            map
+        }); 
+
+    plot_rank(counts, &opt.output)
+}
+
+
 const BLUE : plotters::style::RGBColor = RGBColor(0x2a, 0x71, 0xb0);
 
 fn next_potence(x : f64) -> f64
@@ -33,24 +66,7 @@ fn next_potence(x : f64) -> f64
     10f64.powf(((x.log10() * 10f64).ceil()) / 10.0)
 }
 
-fn main() -> Result<(), Box<dyn Error>>
-{
-    let opt = Opt::from_args();
-
-    let mut rdr = csv::ReaderBuilder::new().has_headers(false).delimiter(b'\t').from_reader(io::stdin());
-    let data =  rdr.deserialize::<Record>();
-    let counts = data.fold(BTreeMap::new(),
-      |mut map,rec|
-      { 
-          let s = rec.unwrap().key; 
-          //*map.entry(s).or_insert(0) += 1;
-          map.entry(s).and_modify(|e| *e += 1 ).or_insert(1);
-          map
-      } ); 
-    plot_rank(counts, &opt.output)
-}
-
-fn plot_rank(counts : BTreeMap<String, i32>, out_path : &Path) -> Result<(), Box<dyn Error>>
+fn plot_rank(counts : BTreeMap<String, usize>, out_path : &Path) -> Result<(), Box<dyn Error>>
 {
     let max = counts.values().fold(0, |max,v| max.max(*v));
     let y_dim = next_potence(max as f64) as usize;
@@ -82,14 +98,14 @@ fn plot_rank(counts : BTreeMap<String, i32>, out_path : &Path) -> Result<(), Box
     sorted_counts.sort();
     chart.draw_series(
         sorted_counts.iter().rev().enumerate().map(|(x,y)|
-                        {
-                            let x0 = SegmentValue::Exact(x);
-                            let x1 = SegmentValue::Exact(x + 1);
-                            let mut bar = Rectangle::new([(x0, *y as usize), (x1, 0 as usize)], BLUE.filled());
-                            bar.set_margin(0, 0, 0, 0);
-                            bar
-                        })
-    )?;
+                                                   {
+                                                       let x0 = SegmentValue::Exact(x);
+                                                       let x1 = SegmentValue::Exact(x + 1);
+                                                       let mut bar = Rectangle::new([(x0, *y as usize), (x1, 0 as usize)], BLUE.filled());
+                                                       bar.set_margin(0, 0, 0, 0);
+                                                       bar
+                                                   })
+        )?;
 
     Ok(())
 }
