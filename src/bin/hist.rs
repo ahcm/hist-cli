@@ -16,17 +16,26 @@ struct Opt
 {
     #[structopt(parse(from_os_str))]
     input: Option<PathBuf>,
+
     #[structopt(parse(from_os_str), long, short, default_value = "histogram.png")]
     output: PathBuf,
+
+    #[structopt(parse(from_os_str), long, short)]
+    /// save counts data to file as TSV
+    save: Option<PathBuf>,
+
     #[structopt(short, long, default_value = "Counts distribution")]
     /// optional title above the plot
     title: String,
+
     #[structopt(short, long, default_value = "1280x960")]
     /// the x and y pixel sizes of the output file
     size: String,
+
     #[structopt(long, default_value = "Rank")]
     /// x-axis label
     xdesc: String,
+
     #[structopt(long, default_value = "Counts")]
     /// y-axis label
     ydesc: String,
@@ -66,9 +75,31 @@ fn main() -> Result<(), Box<dyn Error>>
             map
         }); 
 
-    plot_rank(counts, &opt)
+    if let Some(path) = &opt.save
+    {
+        save(&counts, &path);
+    }
+
+    plot_rank(&counts, &opt)
 }
 
+fn save(counts : &BTreeMap<String, usize>, path : &std::path::Path)
+{
+    let mut out: Box<dyn std::io::Write + 'static> =
+        if path == std::path::Path::new("-")
+        {
+            Box::new(io::stdout())
+        }
+        else
+        {
+            Box::new(File::create(&path).unwrap())
+        };
+
+    for (key, count) in counts
+    {
+       out.write_fmt(format_args!("{}\t{}\n", key, count)).expect("Write to save file failed");
+    }
+}
 
 const BLUE : plotters::style::RGBColor = RGBColor(0x2a, 0x71, 0xb0);
 
@@ -77,7 +108,7 @@ fn next_potence(x : f64) -> f64
     10f64.powf(((x.log10() * 10f64).ceil()) / 10.0)
 }
 
-fn plot_rank(counts : BTreeMap<String, usize>, opt : &Opt) -> Result<(), Box<dyn Error>>
+fn plot_rank(counts : &BTreeMap<String, usize>, opt : &Opt) -> Result<(), Box<dyn Error>>
 {
     let max = counts.values().fold(0, |max,v| max.max(*v));
     let y_dim = next_potence(max as f64) as usize;
