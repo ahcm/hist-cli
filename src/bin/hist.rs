@@ -15,13 +15,15 @@ use std::fs::File;
 struct Opt
 {
     #[structopt(parse(from_os_str))]
+    /// optional file with on entry per line [default: STDIN]
     input: Option<PathBuf>,
 
     #[structopt(parse(from_os_str), long, short, default_value = "histogram.png")]
+    /// file to save PNG plot to
     output: PathBuf,
 
     #[structopt(parse(from_os_str), long, short)]
-    /// save counts data to file as TSV
+    /// save counts data to file as TSV, use - for STDOUT
     save: Option<PathBuf>,
 
     #[structopt(short, long, default_value = "Counts distribution")]
