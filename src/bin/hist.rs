@@ -22,6 +22,10 @@ struct Opt
     /// file to save PNG plot to
     output: PathBuf,
 
+    #[structopt(long, short)]
+    /// do not save a PNG plot to a file
+    nooutput: bool,
+
     #[structopt(parse(from_os_str), long, short)]
     /// save counts data to file as TSV, use - for STDOUT
     save: Option<PathBuf>,
@@ -82,7 +86,14 @@ fn main() -> Result<(), Box<dyn Error>>
         save(&counts, &path);
     }
 
-    plot_rank(&counts, &opt)
+    if !&opt.nooutput
+    {
+        plot_rank(&counts, &opt)
+    }
+    else
+    {
+        Ok(())
+    }
 }
 
 fn save(counts : &BTreeMap<String, usize>, path : &std::path::Path)

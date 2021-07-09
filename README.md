@@ -16,6 +16,7 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -n, --nooutput   do not save a PNG plot to a file
     -V, --version    Prints version information
 
 OPTIONS:
