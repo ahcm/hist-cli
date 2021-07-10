@@ -147,7 +147,6 @@ fn plot_rank(counts : &BTreeMap<String, usize>, opt : &Opt) -> Result<(), Box<dy
         .bold_line_style(&WHITE.mix(0.3))
         .y_desc(&opt.ydesc)
         .x_desc(&opt.xdesc)
-        .disable_x_mesh()
         .label_style(("sans-serif", 20))
         .axis_desc_style(("sans-serif", 24))
         .draw()?;
