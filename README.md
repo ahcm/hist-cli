@@ -34,8 +34,10 @@ ARGS:
 
 Just piping from stdin:
 ```
-$ hist < data.tsv
+$ cut -f 1 data.tsv | hist
 $ open histogram.png # on MacOS, on Linux maybe display or eog
+$ cut -f 1 data.tsv > data.tsv.1; hist data.tsv.1 -o histogram2.png
+$ echo 3 2 2 3 3 4 4 4 4 | tr ' ' '\n' | hist -n -t
 ```
 
 
