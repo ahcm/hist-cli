@@ -8,22 +8,23 @@ $ cargo install hist-cli
 ## Usage
 ```
 $ hist --help
-hist 0.3.1
+hist 0.4.0
 Plots histogram of input
 
 USAGE:
-    hist [OPTIONS] [input]
+    hist [FLAGS] [OPTIONS] [input]
 
 FLAGS:
-    -h, --help       Prints help information
-    -n, --nooutput   do not save a PNG plot to a file
-    -V, --version    Prints version information
+    -h, --help        Prints help information
+    -n, --nooutput    do not save a PNG plot to a file
+    -t, --textplot    also plot a textplot to STDOUT
+    -V, --version     Prints version information
 
 OPTIONS:
+    -T, --Title <Title>      optional title above the plot [default: Counts distribution]
     -o, --output <output>    file to save PNG plot to [default: histogram.png]
     -s, --save <save>        save counts data to file as TSV, use - for STDOUT
     -s, --size <size>        the x and y pixel sizes of the output file [default: 1280x960]
-    -t, --title <title>      optional title above the plot [default: Counts distribution]
         --xdesc <xdesc>      x-axis label [default: Rank]
         --ydesc <ydesc>      y-axis label [default: Counts]
 
