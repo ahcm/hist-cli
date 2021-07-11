@@ -10,8 +10,9 @@ use std::path::PathBuf;
 use std::error::Error;
 use std::fs::File;
 
+#[allow(non_snake_case)]
 #[derive(Debug, StructOpt)]
-#[structopt(name = "hist", about = "Plots histogram of input")]
+#[structopt(name = "hist", about = "Plots histogram of input", rename_all="verbatim")]
 struct Opt
 {
     #[structopt(parse(from_os_str))]
@@ -26,13 +27,17 @@ struct Opt
     /// do not save a PNG plot to a file
     nooutput: bool,
 
+    #[structopt(long, short)]
+    /// also plot a textplot to STDOUT
+    textplot: bool,
+
     #[structopt(parse(from_os_str), long, short)]
     /// save counts data to file as TSV, use - for STDOUT
     save: Option<PathBuf>,
 
     #[structopt(short, long, default_value = "Counts distribution")]
     /// optional title above the plot
-    title: String,
+    Title: String,
 
     #[structopt(short, long, default_value = "1280x960")]
     /// the x and y pixel sizes of the output file
@@ -67,7 +72,7 @@ fn main() -> Result<(), Box<dyn Error>>
             Box::new(io::stdin())
         };
 
-    let counts = 
+    let key_counts = 
         csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b'\t')
@@ -83,16 +88,25 @@ fn main() -> Result<(), Box<dyn Error>>
 
     if let Some(path) = &opt.save
     {
-        save(&counts, &path);
+        save(&key_counts, &path);
     }
 
-    if !&opt.nooutput
+    let mut sorted_counts = key_counts.values().fold(Vec::new(), |mut v, x| { v.push(*x); v });
+    sorted_counts.sort();
+
+    if opt.textplot
     {
-        plot_rank(&counts, &opt)
+        let x_dim = (sorted_counts.len() as f64 * 1.1) as usize;
+        text_plot(&sorted_counts, 160, 80, 0.0, x_dim as f32);
+    }
+
+    if opt.nooutput
+    {
+        Ok(())
     }
     else
     {
-        Ok(())
+        plot_rank(&sorted_counts, &opt)
     }
 }
 
@@ -121,11 +135,11 @@ fn next_potence(x : f64) -> f64
     10f64.powf(((x.log10() * 10f64).ceil()) / 10.0)
 }
 
-fn plot_rank(counts : &BTreeMap<String, usize>, opt : &Opt) -> Result<(), Box<dyn Error>>
+fn plot_rank(sorted_counts : &Vec<usize>, opt : &Opt) -> Result<(), Box<dyn Error>>
 {
-    let max = counts.values().fold(0, |max,v| max.max(*v));
+    let max = *sorted_counts.last().expect("At lease one entry is needed");
     let y_dim = next_potence(max as f64) as usize;
-    let x_dim = (counts.values().len() as f64 * 1.1) as usize;
+    let x_dim = (sorted_counts.len() as f64 * 1.1) as usize;
 
     let (size_x_str, size_y_str) = opt.size.split_once("x").expect("size not in correct format");
     let size_x = size_x_str.parse().expect("Unable to parse size x");
@@ -138,7 +152,7 @@ fn plot_rank(counts : &BTreeMap<String, usize>, opt : &Opt) -> Result<(), Box<dy
         .x_label_area_size(70)
         .y_label_area_size(100)
         .margin(20)
-        .caption(&opt.title, ("sans-serif", 40))
+        .caption(&opt.Title, ("sans-serif", 40))
         .build_cartesian_2d((0..x_dim).into_segmented(), 0..y_dim)?;
 
     chart
@@ -151,8 +165,6 @@ fn plot_rank(counts : &BTreeMap<String, usize>, opt : &Opt) -> Result<(), Box<dy
         .axis_desc_style(("sans-serif", 24))
         .draw()?;
 
-    let mut sorted_counts = counts.values().fold(Vec::new(), |mut v, x| { v.push(*x); v });
-    sorted_counts.sort();
     chart.draw_series(
         sorted_counts.iter().rev().enumerate().map(|(x,y)|
                                                    {
@@ -164,5 +176,19 @@ fn plot_rank(counts : &BTreeMap<String, usize>, opt : &Opt) -> Result<(), Box<dy
                                                    })
         )?;
 
+
     Ok(())
+}
+
+fn text_plot(sorted_counts : &Vec<usize>, width : u32, height : u32, xmin : f32, xmax : f32)
+{
+    use textplots::{Chart,Plot,Shape};
+    Chart::new(width, height, xmin, xmax as f32)
+        .lineplot(&Shape::Bars(
+                &sorted_counts
+                .iter()
+                .rev()
+                .enumerate()
+                .map(|(x,y)| ((x + 1) as f32, *y as f32)).collect::<Vec<(f32,f32)>>()
+                )).display();
 }
