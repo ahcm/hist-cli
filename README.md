@@ -4,6 +4,9 @@ Commandline tool for plotting frequency ranked histograms of TSV/CSV data.
 ```
 $ cargo install hist-cli
 ```
+```
+export PATH="$HOME/.cargo/bin:$PATH"
+```
 
 ## Usage
 ```
