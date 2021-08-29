@@ -8,11 +8,9 @@ license = "CC-BY-SA-4.0"
 keywords = ["histogram", "plot", "command-line", "CLI", "visualization"]
 repository = "https://github.com/ahcm/hist-cli"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 plotters = "^0.3"
 serde = { version = "^1.0", features = ["derive"] }
 csv = "^1.1"
 structopt = "^0.3"
-textplots = "^0.6"
+textplots = "^0.8"

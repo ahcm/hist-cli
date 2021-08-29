@@ -183,7 +183,9 @@ fn plot_rank(sorted_counts : &Vec<usize>, opt : &Opt) -> Result<(), Box<dyn Erro
 fn text_plot(sorted_counts : &Vec<usize>, width : u32, height : u32, xmin : f32, xmax : f32)
 {
     use textplots::{Chart,Plot,Shape};
-    Chart::new(width, height, xmin, xmax as f32)
+    let max = *sorted_counts.last().expect("At lease one entry is needed");
+    let y_dim = next_potence(max as f64) as f32;
+    Chart::new_with_y_range(width, height, xmin, xmax, 0.0, y_dim)
         .lineplot(&Shape::Bars(
                 &sorted_counts
                 .iter()
