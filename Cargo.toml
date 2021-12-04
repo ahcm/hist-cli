@@ -1,7 +1,7 @@
 [package]
 name = "hist-cli"
 version = "0.4.1"
-edition = "2018"
+edition = "2021"
 authors = ["Andreas Hauser <Andreas.Hauser@LMU.de>"]
 description = "Commandline tool for plotting frequency ranked histograms of TSV/CSV data"
 license = "CC-BY-SA-4.0"
