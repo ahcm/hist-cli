@@ -10,8 +10,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
 ## Usage
 ```
-$ hist --help
-hist 0.4.0
+hist 0.4.2
 Plots histogram of input
 
 USAGE:
@@ -24,12 +23,12 @@ FLAGS:
     -V, --version     Prints version information
 
 OPTIONS:
-    -T, --Title <Title>      optional title above the plot [default: Counts distribution]
-    -o, --output <output>    file to save PNG plot to [default: histogram.png]
-    -s, --save <save>        save counts data to file as TSV, use - for STDOUT
-    -s, --size <size>        the x and y pixel sizes of the output file [default: 1280x960]
-        --xdesc <xdesc>      x-axis label [default: Rank]
-        --ydesc <ydesc>      y-axis label [default: Counts]
+    -T, --Title <Title>          optional title above the plot [default: Counts distribution]
+    -g, --geometry <geometry>    the x and y size of the plot [default: 1280x960]
+    -o, --output <output>        file to save PNG plot to [default: histogram.png]
+    -s, --save <save>            save counts data to file as TSV, use - for STDOUT
+        --xdesc <xdesc>          x-axis label [default: Rank]
+        --ydesc <ydesc>          y-axis label [default: Counts]
 
 ARGS:
     <input>    optional file with on entry per line [default: STDIN]

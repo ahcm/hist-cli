@@ -40,8 +40,8 @@ struct Opt
     Title: String,
 
     #[structopt(short, long, default_value = "1280x960")]
-    /// the x and y pixel sizes of the output file
-    size: String,
+    /// the x and y size of the plot
+    geometry: String,
 
     #[structopt(long, default_value = "Rank")]
     /// x-axis label
@@ -141,10 +141,10 @@ fn plot_rank(sorted_counts : &Vec<usize>, opt : &Opt) -> Result<(), Box<dyn Erro
     let y_dim = next_potence(max as f64) as usize;
     let x_dim = (sorted_counts.len() as f64 * 1.1) as usize;
 
-    let (size_x_str, size_y_str) = opt.size.split_once("x").expect("size not in correct format");
-    let size_x = size_x_str.parse().expect("Unable to parse size x");
-    let size_y = size_y_str.parse().expect("Unable to parse size y");
-    let root = BitMapBackend::new(&opt.output, (size_x, size_y)).into_drawing_area();
+    let (geometry_x_str, geometry_y_str) = opt.geometry.split_once("x").expect("geometry not in correct format");
+    let geometry_x = geometry_x_str.parse().expect("Unable to parse geometry x");
+    let geometry_y = geometry_y_str.parse().expect("Unable to parse geometry y");
+    let root = BitMapBackend::new(&opt.output, (geometry_x, geometry_y)).into_drawing_area();
 
     root.fill(&WHITE)?;
 
