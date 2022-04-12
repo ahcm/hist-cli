@@ -122,9 +122,13 @@ fn save(counts : &BTreeMap<String, usize>, path : &std::path::Path)
             Box::new(File::create(&path).unwrap())
         };
 
-    for (key, count) in counts
+    let mut entries = Vec::from_iter(counts);
+    entries.sort_by(|&(_, a), &(_, b)| a.cmp(&b)); // sort by value
+
+
+    for (key, count) in entries 
     {
-       out.write_fmt(format_args!("{}\t{}\n", key, count)).expect("Write to save file failed");
+       out.write_fmt(format_args!("{}\t{}\n", count, key)).expect("Write to save file failed");
     }
 }
 
