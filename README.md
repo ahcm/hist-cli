@@ -39,7 +39,13 @@ Just piping from stdin:
 $ cut -f 1 data.tsv | hist
 $ open histogram.png # on MacOS, on Linux maybe display or eog
 $ cut -f 1 data.tsv > data.tsv.1; hist data.tsv.1 -o histogram2.png
-$ echo 3 2 2 3 3 4 4 4 4 | tr ' ' '\n' | hist -n -t
+$ echo a3 b2 b2 a3 a3 c4 c4 c4 c4 | tr ' ' '\n' | hist -n -t
+
+# not plot at all, just replace: sort | uniq -c | sort -n
+$ echo a3 b2 b2 a3 a3 c4 c4 c4 c4 | tr ' ' '\n' | hist -n -s -
+2       b2
+3       a3
+4       c4
 ```
 
 
