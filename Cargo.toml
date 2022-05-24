@@ -1,6 +1,6 @@
 [package]
 name = "hist-cli"
-version = "0.4.3"
+version = "0.4.4"
 edition = "2021"
 authors = ["Andreas Hauser <Andreas.Hauser@LMU.de>"]
 description = "Commandline tool for plotting frequency ranked histograms of TSV/CSV data"
@@ -10,7 +10,6 @@ repository = "https://github.com/ahcm/hist-cli"
 
 [dependencies]
 plotters = "^0.3"
-serde = { version = "^1.0", features = ["derive"] }
 csv = "^1.1"
 structopt = "^0.3"
 textplots = "^0.8"

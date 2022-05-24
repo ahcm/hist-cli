@@ -1,8 +1,7 @@
 extern crate plotters;
-extern crate serde;
 extern crate csv;
+use csv::StringRecord;
 use plotters::prelude::*;
-use serde::Deserialize;
 use std::io;
 use std::collections::BTreeMap;
 use structopt::StructOpt;
@@ -18,6 +17,10 @@ struct Opt
     #[structopt(parse(from_os_str))]
     /// optional file with on entry per line [default: STDIN]
     input: Option<PathBuf>,
+
+    #[structopt(long, short, default_value = "1")]
+    /// key (column) selector
+    key: usize,
 
     #[structopt(parse(from_os_str), long, short, default_value = "histogram.png")]
     /// file to save PNG plot to
@@ -52,12 +55,6 @@ struct Opt
     ydesc: String,
 }
 
-#[derive(Debug, Deserialize)]
-struct Record
-{
-    key: String,
-}
-
 fn main() -> Result<(), Box<dyn Error>>
 {
     let opt = Opt::from_args();
@@ -72,19 +69,18 @@ fn main() -> Result<(), Box<dyn Error>>
             Box::new(io::stdin())
         };
 
-    let key_counts = 
-        csv::ReaderBuilder::new()
+    let mut reader = csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b'\t')
-        .from_reader(input)
-        .deserialize::<Record>()
-        .fold(BTreeMap::new(), |mut map,rec|
-        { 
-            let s = rec.unwrap().key; 
-            //*map.entry(s).or_insert(0) += 1;
-            map.entry(s).and_modify(|e| *e += 1 ).or_insert(1);
-            map
-        }); 
+        .from_reader(input);
+
+    let mut key_counts = BTreeMap::new();
+    let mut record = StringRecord::new();
+    while reader.read_record(&mut record)?
+    {
+       let s = record.get(opt.key - 1).unwrap().to_string(); 
+       key_counts.entry(s).and_modify(|e| *e += 1 ).or_insert(1);
+    }
 
     if let Some(path) = &opt.save
     {
