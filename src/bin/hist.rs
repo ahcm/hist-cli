@@ -18,6 +18,11 @@ struct Opt
     /// optional file with on entry per line [default: STDIN]
     input: Option<PathBuf>,
 
+    // r"" makes it prinable as escaped in default
+    #[structopt(short, long, default_value = r"\t")]
+    /// column delimiter
+    delimiter: String,
+
     #[structopt(long, short, default_value = "1")]
     /// key (column) selector
     key: usize,
@@ -69,9 +74,17 @@ fn main() -> Result<(), Box<dyn Error>>
             Box::new(io::stdin())
         };
 
+    // accept escaped delimiters
+    // could be expanded to aliases e.g. "TAB"
+    let delimiter = match opt.delimiter.as_str()
+    {
+        r"\t" => b'\t', // structopt needs r"" to show default as escaped, also for sepcifiying as escaped in CLI
+         _ => *opt.delimiter.as_bytes().first().expect("Not a valid delimiter")
+    };
+
     let mut reader = csv::ReaderBuilder::new()
         .has_headers(false)
-        .delimiter(b'\t')
+        .delimiter(delimiter)
         .from_reader(input);
 
     let mut key_counts = BTreeMap::new();
