@@ -36,6 +36,10 @@ struct Opt
     nooutput: bool,
 
     #[structopt(long, short)]
+    /// input has header
+    Header: bool,
+
+    #[structopt(long, short)]
     /// also plot a textplot to STDOUT
     textplot: bool,
 
@@ -83,7 +87,7 @@ fn main() -> Result<(), Box<dyn Error>>
     };
 
     let mut reader = csv::ReaderBuilder::new()
-        .has_headers(false)
+        .has_headers(opt.Header)
         .delimiter(delimiter)
         .from_reader(input);
 
