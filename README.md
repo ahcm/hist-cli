@@ -10,13 +10,14 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
 ## Usage
 ```
-hist 0.4.5
+hist 0.4.6
 Plots histogram of input
 
 USAGE:
     hist [FLAGS] [OPTIONS] [input]
 
 FLAGS:
+    -H, --Header      input has header
     -h, --help        Prints help information
     -n, --nooutput    do not save a PNG plot to a file
     -t, --textplot    also plot a textplot to STDOUT
