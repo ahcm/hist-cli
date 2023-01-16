@@ -39,9 +39,8 @@ ARGS:
 
 Just piping from stdin:
 ```
-$ cut -f 1 data.tsv | hist
-$ open histogram.png # on MacOS, on Linux maybe display or eog
-$ cut -f 1 data.tsv > data.tsv.1; hist data.tsv.1 -o histogram2.png
+$ cut -f 1 data.tsv | hist   # same as hist -k 1 data.tsv
+$ open histogram.png # on MacOS, on Linux maybe xdg-open, display or eog
 $ echo a3 b2 b2 a3 a3 c4 c4 c4 c4 | tr ' ' '\n' | hist -n -t
 
 # not plot at all, just replace: sort | uniq -c | sort -n
