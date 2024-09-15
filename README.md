@@ -1,6 +1,8 @@
 # hist
 Commandline tool for plotting frequency ranked histograms of TSV/CSV data.
+
 ## Installation
+You might need to first install libfontconfig-dev on your system (or some analog of your distro).
 ```
 $ cargo install hist-cli
 ```
