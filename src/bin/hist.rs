@@ -40,7 +40,7 @@ struct Opt
     nooutput: bool,
 
     #[structopt(long, short)]
-    /// input has header
+    /// input has header line (see also --skip)
     Header: bool,
 
     #[structopt(long, short)]
