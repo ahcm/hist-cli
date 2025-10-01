@@ -9,7 +9,7 @@ keywords = ["histogram", "plot", "command-line", "CLI", "visualization"]
 repository = "https://github.com/ahcm/hist-cli"
 
 [dependencies]
-plotters = "^0.3"
-csv = "^1.3"
-structopt = "^0.3"
-textplots = "^0.8"
+plotters = { version = "0.3.7", default-features = false, features = ["bitmap_backend", "bitmap_encoder", "font-kit"] }
+csv = "1.3"
+clap = { version = "4.0", features = ["derive"] }
+textplots = "0.8"
