@@ -105,9 +105,9 @@ struct Opt
     /// aggregate function: count or sum
     aggregate: String,
 
-    #[arg(long, short, default_value = "2")]
-    /// value (column) selector for sum aggregation (1-indexed)
-    value: usize,
+    #[arg(long, short)]
+    /// value (column) selector for sum aggregation (defaults to y column)
+    value: Option<usize>,
 }
 
 fn main() -> Result<()>
@@ -134,13 +134,20 @@ fn main() -> Result<()>
 
     if opt.aggregate != "count" && opt.aggregate != "sum"
     {
-        return Err(HistError::Validation("Aggregate function must be 'count' or 'sum'".to_string()));
+        return Err(HistError::Validation(
+            "Aggregate function must be 'count' or 'sum'".to_string(),
+        ));
     }
 
-    if opt.aggregate == "sum" && opt.value == 0
+    // Default value column to key column if not specified
+    let value_col = if let Some(value) = opt.value
     {
-        return Err(HistError::Validation("Value column must be 1 or greater for sum aggregation".to_string()));
+        value
     }
+    else
+    {
+        opt.key
+    };
 
     let mut reader = csv::ReaderBuilder::new()
         .has_headers(opt.header)
@@ -169,8 +176,8 @@ fn main() -> Result<()>
             let key_field = record.get(opt.key - 1).ok_or_else(|| {
                 HistError::Validation(format!("Key column {} not found in record", opt.key))
             })?;
-            let value_field = record.get(opt.value - 1).ok_or_else(|| {
-                HistError::Validation(format!("Value column {} not found in record", opt.value))
+            let value_field = record.get(value_col - 1).ok_or_else(|| {
+                HistError::Validation(format!("Value column {} not found in record", value_col))
             })?;
 
             let key = key_field.to_string();
@@ -178,7 +185,10 @@ fn main() -> Result<()>
                 HistError::Parse(format!("Cannot parse value '{}' as number", value_field))
             })?;
 
-            key_counts.entry(key).and_modify(|e| *e += value).or_insert(value);
+            key_counts
+                .entry(key)
+                .and_modify(|e| *e += value)
+                .or_insert(value);
         }
     }
 
