@@ -1,5 +1,12 @@
 # hist
-Commandline tool for plotting frequency ranked histograms of TSV/CSV data.
+Commandline tool for aggregating (and plotting) frequency ranked histograms of TSV/CSV data.
+
+While it started out as plotting tool, it is probably just better to use it for aggregating,
+that is generating the histogram data, and then use my (plotxy) or other plotting tools.
+See https://github.com/ahcm/plotxy
+
+Plotting might be dropped in the future completely or feature gated.
+There is a PR for voicing your opinion. I default to dropping it.
 
 ## Installation
 You might need to first install libfontconfig-dev on your system (or some analog of your distro).
