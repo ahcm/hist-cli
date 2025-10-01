@@ -100,6 +100,14 @@ struct Opt
     #[arg(long, default_value = "Counts")]
     /// y-axis label
     ydesc: String,
+
+    #[arg(long, short, default_value = "count")]
+    /// aggregate function: count or sum
+    aggregate: String,
+
+    #[arg(long, short, default_value = "2")]
+    /// value (column) selector for sum aggregation (1-indexed)
+    value: usize,
 }
 
 fn main() -> Result<()>
@@ -124,20 +132,54 @@ fn main() -> Result<()>
         return Err(HistError::Validation("Key must be 1 or greater".to_string()));
     }
 
+    if opt.aggregate != "count" && opt.aggregate != "sum"
+    {
+        return Err(HistError::Validation("Aggregate function must be 'count' or 'sum'".to_string()));
+    }
+
+    if opt.aggregate == "sum" && opt.value == 0
+    {
+        return Err(HistError::Validation("Value column must be 1 or greater for sum aggregation".to_string()));
+    }
+
     let mut reader = csv::ReaderBuilder::new()
         .has_headers(opt.header)
         .delimiter(delimiter)
         .from_reader(input);
 
-    let mut key_counts = BTreeMap::new();
+    let mut key_counts: BTreeMap<String, usize> = BTreeMap::new();
     let mut record = StringRecord::new();
-    while reader.read_record(&mut record)?
+
+    if opt.aggregate == "count"
     {
-        let field = record.get(opt.key - 1).ok_or_else(|| {
-            HistError::Validation(format!("Column {} not found in record", opt.key))
-        })?;
-        let s = field.to_string();
-        key_counts.entry(s).and_modify(|e| *e += 1).or_insert(1);
+        while reader.read_record(&mut record)?
+        {
+            let field = record.get(opt.key - 1).ok_or_else(|| {
+                HistError::Validation(format!("Column {} not found in record", opt.key))
+            })?;
+            let s = field.to_string();
+            key_counts.entry(s).and_modify(|e| *e += 1).or_insert(1);
+        }
+    }
+    else
+    {
+        // sum aggregation
+        while reader.read_record(&mut record)?
+        {
+            let key_field = record.get(opt.key - 1).ok_or_else(|| {
+                HistError::Validation(format!("Key column {} not found in record", opt.key))
+            })?;
+            let value_field = record.get(opt.value - 1).ok_or_else(|| {
+                HistError::Validation(format!("Value column {} not found in record", opt.value))
+            })?;
+
+            let key = key_field.to_string();
+            let value: usize = value_field.parse().map_err(|_| {
+                HistError::Parse(format!("Cannot parse value '{}' as number", value_field))
+            })?;
+
+            key_counts.entry(key).and_modify(|e| *e += value).or_insert(value);
+        }
     }
 
     if key_counts.is_empty()
